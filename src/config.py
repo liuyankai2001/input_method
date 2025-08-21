@@ -7,3 +7,5 @@ PROCESS_DATA_DIR = Path(__file__).parent.parent / 'data' /'processed'
 LOGS_DIR = ROOT_DIR / 'logs'
 MODELS_DIR = ROOT_DIR / 'models'
 SEQ_LEN = 5
+
+BATCH_SIZE = 32
