@@ -58,6 +58,12 @@ def process():
     vocab_list = ['<UNK>']+list(vocab_set)
     print(f'词表大小：{len(vocab_list)}')
     word2index = { word:index for index,word in enumerate(vocab_list) }
+    # 保存词表
+    with open(config.PROCESS_DATA_DIR / 'vocab.txt',mode='w',encoding='utf-8') as f:
+        for word in vocab_list:
+            f.write(word+'\n')
+
+    print("词表保存完成")
 
     # 构建训练集并保存
     train_dataset = built_dataset(train_sentences,word2index)
