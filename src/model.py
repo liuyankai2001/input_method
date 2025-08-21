@@ -7,7 +7,7 @@ class InputMethodModel(nn.Module):
         self.rnn = nn.RNN(input_size=config.EMBEDDING_DIM,hidden_size=config.HIDDEN_SIZE,batch_first=True)
         self.linear = nn.Linear(in_features=config.HIDDEN_SIZE,out_features=vocab_size)
 
-    def foward(self,x):
+    def forward(self,x):
         # x.shape:[batch_size,seq_len]
         embed = self.embedding(x)
         # embed.shape:[batch_size, seq_len, embeding_dim]
