@@ -1,4 +1,7 @@
+import time
+
 import torch
+from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 from dataset import get_dataloader
@@ -46,14 +49,28 @@ def train():
     loss_function = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(),lr=config.LEARNING_RATE)
 
+    writer = SummaryWriter(log_dir=config.LOGS_DIR / time.strftime('%Y-%m-%d_%H-%M-%S'))
+
+    best_loss = float('inf')
     # 开始训练
     for epoch in range(1,config.EPOCHS+1):
         print(f"======== Epoch {epoch} ========")
         # 训练一轮的逻辑
         avg_loss = train_one_epoch(model,dataloader,loss_function,optimizer,device)
         print(f"Loss:{avg_loss}")
+        writer.add_scalar('Loss',avg_loss,epoch)
 
-    model
+        # 保存模型
+        if avg_loss < best_loss:
+            best_loss = avg_loss
+            torch.save(model.state_dict(),config.MODELS_DIR/'model.pt')
+            print("保存模型成功")
+        else:
+            print("无需保存模型")
+
+        # 加载模型
+        # model.load_state_dict(torch.load(config.MODELS_DIR/'model.pt'))
+
 
 if __name__ == '__main__':
     train()
