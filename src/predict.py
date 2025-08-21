@@ -1,8 +1,7 @@
-import jieba
 import torch
 import config
 from model import InputMethodModel
-
+from tokenizer import JiebaTokenizer
 
 def predict_batch(model,input_tensor):
     """
@@ -19,27 +18,24 @@ def predict_batch(model,input_tensor):
         # top5 [batch_size, 5]
     top5_indexes_list = top5_indexes.tolist()
     return top5_indexes_list
-def predict(text,model,word2index,index2word,device):
+def predict(text,model,tokenizer,device):
 
     # 数据
-    word_list = jieba.lcut(text)
-    index_list = [word2index.get(word,0) for word in word_list]
+    index_list = tokenizer.encode(text)
     input_tensor = torch.tensor([index_list]).to(device) #[batch_size, seq_len]
 
     top5_indexes_list = predict_batch(model,input_tensor)
 
-    top5_words = [index2word.get(index) for index in top5_indexes_list[0]]
+    top5_words = [tokenizer.index2word.get(index) for index in top5_indexes_list[0]]
     return top5_words
 
 def run_predict():
     # 加载资源
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    tokenizer = JiebaTokenizer.from_vocab(config.PROCESS_DATA_DIR / 'vocab.txt')
 
-    with open(config.PROCESS_DATA_DIR / 'vocab.txt','r',encoding='utf-8') as f:
-        vocab_list = [line[:-1] for line in f.readlines()]
-    word2index = {word:index for index, word in enumerate(vocab_list)}
-    index2word = {index:word for index, word in enumerate(vocab_list)}
-    model = InputMethodModel(vocab_size=len(vocab_list)).to(device)
+
+    model = InputMethodModel(vocab_size=tokenizer.vocab_size).to(device)
     model.load_state_dict(torch.load(config.MODELS_DIR/'model.pt'))
 
 
@@ -54,7 +50,7 @@ def run_predict():
             print("请输入下一个词")
             continue
         history_input+=user_input
-        top5_words = predict(history_input,model,word2index,index2word,device)
+        top5_words = predict(history_input,model,tokenizer,device)
         print(f"历史输入：{history_input}")
         print(top5_words)
 
